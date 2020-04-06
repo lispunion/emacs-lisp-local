@@ -16,34 +16,49 @@
 ;;; Code:
 
 (defvar-local lisp-indent-buffer-local nil
-  "Bla bla")
+  "Buffer-local Lisp indentation properties.
+
+List of (SYMBOL . PLIST) sublists. Easiest to show by example:
+
+((when lisp-indent-function 1)
+ (if scheme-indent-function 1))")
 
 (defvar lisp-indent-buffer-local-functions
   '(lisp-indent-function
     common-lisp-indent-function
     scheme-indent-function
-    clojure-indent-function))
-
-(defvar lisp-indent-buffer-local-get-builtin (symbol-function 'get)
+    clojure-indent-function)
   "")
 
-(defun lisp-indent-buffer-local-get (symbol propname)
-  (message "getting %S property %S" symbol propname)
-  (let* ((props (and (listp lisp-indent-buffer-local)
-                     (assoc symbol lisp-indent-buffer-local)))
-         (prop  (and (listp props) (assoc propname props))))
-    (if prop (cdr prop)
-        (let ((builtin lisp-indent-buffer-local-get-builtin))
-          (unless (and (subrp builtin) (equal "get" (subr-name builtin)))
-            (error "Unable to override built-in `get' function"))
-          (funcall builtin symbol propname)))))
+(defun lisp-indent-buffer-local-valid-p (plists)
+  (and (listp plists)
+       (cl-every (lambda (sym-plist)
+                   (and (listp sym-plist)
+                        (symbolp (car sym-plist))
+                        (let ((plist (cdr sym-plist)))
+                          (while (and (consp plist)
+                                      (symbolp (car plist))
+                                      (consp (cdr plist)))
+                            (setq plist (cddr plist)))
+                          (null plist))))
+                 plists)))
 
 (defun lisp-indent-buffer-local-advice (fun &rest args)
-  (let ((old-get (symbol-function 'get)))
-    (setf (symbol-function 'get) #'lisp-indent-buffer-local-get)
-    (message "get is now %S" (symbol-function 'get))
-    (unwind-protect (apply fun args)
-      (setf (symbol-function 'get) old-get))))
+  (cond ((not (lisp-indent-buffer-local-valid-p lisp-indent-buffer-local))
+         (message "Warning: ignoring invalid lisp-indent-buffer-local")
+         (apply fun args))
+        (t
+         (let* ((new-plists lisp-indent-buffer-local)
+                (old-plists
+                 (mapcar (lambda (sym) (cons sym (symbol-plist sym)))
+                         (mapcar #'car new-plists))))
+           (mapc (lambda (sym-plist)
+                   (setplist (car sym-plist) (cdr sym-plist)))
+                 new-plists)
+           (unwind-protect (apply fun args)
+             (mapc (lambda (sym-plist)
+                     (setplist (car sym-plist) (cdr sym-plist)))
+                   old-plists))))))
 
 (defun lisp-indent-buffer-local-enable ()
   (dolist (symbol lisp-indent-buffer-local-functions)
