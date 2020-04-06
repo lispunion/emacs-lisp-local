@@ -85,6 +85,7 @@ to ARGS."
         ((derived-mode-p 'scheme-mode)
          '(lisp-indent-function scheme-indent-function))))
 
+;;;###autoload
 (defun lisp-buffer-local ()
   "Respect local Lisp indentation settings in the current buffer.
 
