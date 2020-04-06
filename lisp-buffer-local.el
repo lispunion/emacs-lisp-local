@@ -24,9 +24,10 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
  (if scheme-indent-function 1))")
 
 (defvar-local lisp-buffer-local--real-lisp-indent-function nil
-  "")
+  "Value of `lisp-indent-function' inherited from the major mode.")
 
 (defun lisp-buffer-local--valid-plists-p (plists)
+  "Validate PLISTS mapping symbols to their property lists."
   (and (listp plists)
        (cl-every (lambda (sym-plist)
                    (and (listp sym-plist)
@@ -40,6 +41,7 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
                  plists)))
 
 (defun lisp-buffer-local--call-with-properties (fun &rest args)
+  "Apply FUN to ARGS with local values for symbol properties."
   (cond ((not (lisp-buffer-local--valid-plists-p
                lisp-buffer-local-symbol-properties))
          (message
@@ -59,6 +61,7 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
                    old-plists))))))
 
 (defun lisp-buffer-local--lisp-indent-function (&rest args)
+  "Local-properties wrapper for use in `lisp-indent-function'."
   (cl-assert lisp-buffer-local--real-lisp-indent-function)
   (apply #'lisp-buffer-local--call-with-properties
          lisp-buffer-local--real-lisp-indent-function
