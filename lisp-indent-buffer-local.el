@@ -23,14 +23,9 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
 ((when lisp-indent-function 1)
  (if scheme-indent-function 1))")
 
-(defvar lisp-indent-buffer-local-functions
-  '(lisp-indent-function
-    common-lisp-indent-function
-    scheme-indent-function
-    clojure-indent-function)
-  "")
+(defvar-local lisp-indent-buffer-local--orig-fun nil)
 
-(defun lisp-indent-buffer-local-valid-p (plists)
+(defun lisp-indent-buffer--local-valid-p (plists)
   (and (listp plists)
        (cl-every (lambda (sym-plist)
                    (and (listp sym-plist)
@@ -43,8 +38,8 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
                           (null plist))))
                  plists)))
 
-(defun lisp-indent-buffer-local-advice (fun &rest args)
-  (cond ((not (lisp-indent-buffer-local-valid-p lisp-indent-buffer-local))
+(defun lisp-indent-buffer-local--advice (fun &rest args)
+  (cond ((not (lisp-indent-buffer--local-valid-p lisp-indent-buffer-local))
          (message "Warning: ignoring invalid lisp-indent-buffer-local")
          (apply fun args))
         (t
@@ -60,16 +55,18 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
                      (setplist (car sym-plist) (cdr sym-plist)))
                    old-plists))))))
 
-(defun lisp-indent-buffer-local-enable ()
-  (dolist (symbol lisp-indent-buffer-local-functions)
-    (add-function :around (symbol-function symbol)
-                  #'lisp-indent-buffer-local-advice
-                  '((name . lisp-indent-buffer-local-advice)))))
+(defun lisp-indent-buffer-local--indent-function (&rest args)
+  (cl-assert lisp-indent-buffer-local--orig-fun)
+  (apply #'lisp-indent-buffer-local--advice
+         lisp-indent-buffer-local--orig-fun
+         args))
 
-(defun lisp-indent-buffer-local-disable ()
-  (dolist (symbol lisp-indent-buffer-local-functions)
-    (remove-function (symbol-function symbol)
-                     'lisp-indent-buffer-local-advice)))
+(defun lisp-indent-buffer-local ()
+  (setq-local lisp-indent-buffer-local--orig-fun
+              (or lisp-indent-buffer-local--orig-fun
+                  lisp-indent-function))
+  (setq-local lisp-indent-function
+              #'lisp-indent-buffer-local--indent-function))
 
 (provide 'lisp-indent-buffer-local)
 
