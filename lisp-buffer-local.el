@@ -1,4 +1,4 @@
-;;; lisp-buffer-local.el --- Configure custom Lisp/Scheme indentation per each file -*- lexical-binding: t -*-
+;;; lisp-buffer-local.el --- Allow different Lisp indentation in each buffer -*- lexical-binding: t -*-
 ;;
 ;; SPDX-License-Identifier: ISC
 ;; Author: Lassi Kortela <lassi@lassi.io>
