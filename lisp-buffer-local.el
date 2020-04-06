@@ -15,7 +15,7 @@
 ;;
 ;;; Code:
 
-(defvar-local lisp-buffer-local nil
+(defvar-local lisp-buffer-local-symbol-properties nil
   "Buffer-local Lisp indentation properties.
 
 List of (SYMBOL . PLIST) sublists. Easiest to show by example:
@@ -23,10 +23,10 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
 ((when lisp-indent-function 1)
  (if scheme-indent-function 1))")
 
-(defvar-local lisp-buffer-local--orig-fun nil
+(defvar-local lisp-buffer-local--real-lisp-indent-function nil
   "")
 
-(defun lisp-buffer-local--valid-p (plists)
+(defun lisp-buffer-local--valid-plists-p (plists)
   (and (listp plists)
        (cl-every (lambda (sym-plist)
                    (and (listp sym-plist)
@@ -39,12 +39,14 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
                           (null plist))))
                  plists)))
 
-(defun lisp-buffer-local--advice (fun &rest args)
-  (cond ((not (lisp-buffer-local--valid-p lisp-buffer-local))
-         (message "Warning: ignoring invalid lisp-buffer-local")
+(defun lisp-buffer-local--call-with-properties (fun &rest args)
+  (cond ((not (lisp-buffer-local--valid-plists-p
+               lisp-buffer-local-symbol-properties))
+         (message
+          "Warning: ignoring invalid lisp-buffer-local-symbol-properties")
          (apply fun args))
         (t
-         (let* ((new-plists lisp-buffer-local)
+         (let* ((new-plists lisp-buffer-local-symbol-properties)
                 (old-plists
                  (mapcar (lambda (sym) (cons sym (symbol-plist sym)))
                          (mapcar #'car new-plists))))
@@ -56,18 +58,18 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
                      (setplist (car sym-plist) (cdr sym-plist)))
                    old-plists))))))
 
-(defun lisp-buffer-local--indent-function (&rest args)
-  (cl-assert lisp-buffer-local--orig-fun)
-  (apply #'lisp-buffer-local--advice
-         lisp-buffer-local--orig-fun
+(defun lisp-buffer-local--lisp-indent-function (&rest args)
+  (cl-assert lisp-buffer-local--real-lisp-indent-function)
+  (apply #'lisp-buffer-local--call-with-properties
+         lisp-buffer-local--real-lisp-indent-function
          args))
 
 (defun lisp-buffer-local ()
-  (setq-local lisp-buffer-local--orig-fun
-              (or lisp-buffer-local--orig-fun
+  (setq-local lisp-buffer-local--real-lisp-indent-function
+              (or lisp-buffer-local--real-lisp-indent-function
                   lisp-indent-function))
   (setq-local lisp-indent-function
-              #'lisp-buffer-local--indent-function))
+              #'lisp-buffer-local--lisp-indent-function))
 
 (provide 'lisp-buffer-local)
 
