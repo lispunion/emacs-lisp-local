@@ -90,7 +90,7 @@ to ARGS."
   "Respect local Lisp indentation settings in the current buffer.
 
 Causes `lisp-buffer-local-indent' to take effect for the current
-buffer. The effect lasts until the buffer is killed or the major
+buffer.  The effect lasts until the buffer is killed or the major
 mode is changed.
 
 This is meant to be used from one or more of the following hooks:
@@ -101,13 +101,13 @@ This is meant to be used from one or more of the following hooks:
     (add-hook 'clojure-mode-hook    'lisp-buffer-local)
 
 `lisp-buffer-local' signals an error if the current major mode is
-not a Lisp-like mode known to it. It does no harm to call it more
+not a Lisp-like mode known to it.  It does no harm to call it more
 than once.
 
 Implementation note: `lisp-buffer-local' achieves its effect by
 overriding the variable `lisp-indent-function' with its own
 function wrapping the real indent function provided by the major
-mode. The wrapper overrides global indentation-related symbol
+mode.  The wrapper overrides global indentation-related symbol
 properties with their local values, then restores them back to
 their global values."
   (or (consp lisp-buffer-local--state)
