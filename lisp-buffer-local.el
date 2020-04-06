@@ -11,7 +11,27 @@
 ;;
 ;;; Commentary:
 ;;
-;; Configure custom Lisp/Scheme indentation per each file.
+;; Languages in the Lisp family have macros, which means that some
+;; Lisp forms sometimes need custom indentation.  Emacs enables this
+;; via symbol properties: e.g. (put 'when 'lisp-indent-function 1)
+;;
+;; Unfortunately symbol properties are global to all of Emacs.  This
+;; makes it impossible to have different Lisp indentation settings in
+;; different buffers.  This package works around the problem by adding
+;; a `lisp-indent-function' wrapper that temporarily changes those
+;; properties to buffer-local values whenever you indent some code.  It
+;; then changes them back to their global values after indenting.
+;;
+;; The buffer-local variable `lisp-buffer-local-indent' controls
+;; indentation.  When a particular Lisp form is not mentioned in that
+;; variable, the global indentation settings are used as a fallback.
+;;
+;; Enable via one or more of the following hooks:
+;;
+;; (add-hook 'emacs-lisp-mode-hook 'lisp-buffer-local)
+;; (add-hook 'lisp-mode-hook       'lisp-buffer-local)
+;; (add-hook 'scheme-mode-hook     'lisp-buffer-local)
+;; (add-hook 'clojure-mode-hook    'lisp-buffer-local)
 ;;
 ;;; Code:
 
