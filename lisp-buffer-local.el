@@ -33,6 +33,11 @@
 ;; (add-hook 'scheme-mode-hook     'lisp-buffer-local)
 ;; (add-hook 'clojure-mode-hook    'lisp-buffer-local)
 ;;
+;; This package does not say where your indentation settings should
+;; come from. Currently you can set them in `.dir-locals.el' or a
+;; custom hook function. In the future, more convenient ways will
+;; hopefully be provided by other packages.
+;;
 ;;; Code:
 
 (defvar-local lisp-buffer-local-indent nil
