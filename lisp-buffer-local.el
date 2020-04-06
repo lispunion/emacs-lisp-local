@@ -1,8 +1,8 @@
-;;; lisp-indent-buffer-local.el --- Configure custom Lisp/Scheme indentation per each file -*- lexical-binding: t -*-
+;;; lisp-buffer-local.el --- Configure custom Lisp/Scheme indentation per each file -*- lexical-binding: t -*-
 ;;
 ;; SPDX-License-Identifier: ISC
 ;; Author: Lassi Kortela <lassi@lassi.io>
-;; URL: https://github.com/lassik/emacs-lisp-indent-buffer-local
+;; URL: https://github.com/lassik/emacs-lisp-buffer-local
 ;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
 ;; Package-Version: 0.1.0
 ;; Keywords: languages lisp
@@ -15,7 +15,7 @@
 ;;
 ;;; Code:
 
-(defvar-local lisp-indent-buffer-local nil
+(defvar-local lisp-buffer-local nil
   "Buffer-local Lisp indentation properties.
 
 List of (SYMBOL . PLIST) sublists. Easiest to show by example:
@@ -23,9 +23,10 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
 ((when lisp-indent-function 1)
  (if scheme-indent-function 1))")
 
-(defvar-local lisp-indent-buffer-local--orig-fun nil)
+(defvar-local lisp-buffer-local--orig-fun nil
+  "")
 
-(defun lisp-indent-buffer--local-valid-p (plists)
+(defun lisp-buffer-local--valid-p (plists)
   (and (listp plists)
        (cl-every (lambda (sym-plist)
                    (and (listp sym-plist)
@@ -38,12 +39,12 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
                           (null plist))))
                  plists)))
 
-(defun lisp-indent-buffer-local--advice (fun &rest args)
-  (cond ((not (lisp-indent-buffer--local-valid-p lisp-indent-buffer-local))
-         (message "Warning: ignoring invalid lisp-indent-buffer-local")
+(defun lisp-buffer-local--advice (fun &rest args)
+  (cond ((not (lisp-buffer-local--valid-p lisp-buffer-local))
+         (message "Warning: ignoring invalid lisp-buffer-local")
          (apply fun args))
         (t
-         (let* ((new-plists lisp-indent-buffer-local)
+         (let* ((new-plists lisp-buffer-local)
                 (old-plists
                  (mapcar (lambda (sym) (cons sym (symbol-plist sym)))
                          (mapcar #'car new-plists))))
@@ -55,19 +56,19 @@ List of (SYMBOL . PLIST) sublists. Easiest to show by example:
                      (setplist (car sym-plist) (cdr sym-plist)))
                    old-plists))))))
 
-(defun lisp-indent-buffer-local--indent-function (&rest args)
-  (cl-assert lisp-indent-buffer-local--orig-fun)
-  (apply #'lisp-indent-buffer-local--advice
-         lisp-indent-buffer-local--orig-fun
+(defun lisp-buffer-local--indent-function (&rest args)
+  (cl-assert lisp-buffer-local--orig-fun)
+  (apply #'lisp-buffer-local--advice
+         lisp-buffer-local--orig-fun
          args))
 
-(defun lisp-indent-buffer-local ()
-  (setq-local lisp-indent-buffer-local--orig-fun
-              (or lisp-indent-buffer-local--orig-fun
+(defun lisp-buffer-local ()
+  (setq-local lisp-buffer-local--orig-fun
+              (or lisp-buffer-local--orig-fun
                   lisp-indent-function))
   (setq-local lisp-indent-function
-              #'lisp-indent-buffer-local--indent-function))
+              #'lisp-buffer-local--indent-function))
 
-(provide 'lisp-indent-buffer-local)
+(provide 'lisp-buffer-local)
 
-;;; lisp-indent-buffer-local.el ends here
+;;; lisp-buffer-local.el ends here
