@@ -31,7 +31,7 @@ Example: (if 1 let1 2 with-input-from-string 1)")
   (null plist))
 
 (defun lisp-buffer-local--make-plists (settings propnames)
-  "Internal helper for `lisp-buffer-local'."
+  "Internal helper to merge SETTINGS and PROPNAMES into PLISTS."
   (let (props)
     (while settings
       (let ((symbol (nth 0 settings))
@@ -65,7 +65,10 @@ Example: (if 1 let1 2 with-input-from-string 1)")
                    old-plists))))))
 
 (defun lisp-buffer-local--indent-function (&rest args)
-  "Local-properties wrapper for use as `lisp-indent-function'."
+  "Local-properties wrapper for use as variable `lisp-indent-function'.
+
+Applies the old function from the variable `lisp-indent-function'
+to ARGS."
   (cl-assert (consp lisp-buffer-local--state))
   (apply #'lisp-buffer-local--call-with-properties
          (car lisp-buffer-local--state)
@@ -83,7 +86,7 @@ Example: (if 1 let1 2 with-input-from-string 1)")
          '(lisp-indent-function scheme-indent-function))))
 
 (defun lisp-buffer-local ()
-  "Respect local changes to Lisp indentation in the current buffer.
+  "Respect local Lisp indentation settings in the current buffer.
 
 Causes `lisp-buffer-local-indent' to take effect for the current
 buffer. The effect lasts until the buffer is killed or the major
@@ -91,24 +94,26 @@ mode is changed.
 
 This is meant to be used from one or more of the following hooks:
 
-(add-hook 'emacs-lisp-mode-hook 'lisp-buffer-local)
-(add-hook 'lisp-mode-hook       'lisp-buffer-local)
-(add-hook 'scheme-mode-hook     'lisp-buffer-local)
-(add-hook 'clojure-mode-hook    'lisp-buffer-local)
+    (add-hook 'emacs-lisp-mode-hook 'lisp-buffer-local)
+    (add-hook 'lisp-mode-hook       'lisp-buffer-local)
+    (add-hook 'scheme-mode-hook     'lisp-buffer-local)
+    (add-hook 'clojure-mode-hook    'lisp-buffer-local)
 
 `lisp-buffer-local' signals an error if the current major mode is
 not a Lisp-like mode known to it. It does no harm to call it more
 than once.
 
 Implementation note: `lisp-buffer-local' achieves its effect by
-overriding `lisp-indent-function' with its own function wrapping
-the real indent function provided by the major mode. The wrapper
-overrides global indentation-related symbol properties with their
-local values, then restores them back to their global values."
+overriding the variable `lisp-indent-function' with its own
+function wrapping the real indent function provided by the major
+mode. The wrapper overrides global indentation-related symbol
+properties with their local values, then restores them back to
+their global values."
   (or (consp lisp-buffer-local--state)
-      (let ((properties (or (lisp-buffer-local--indent-properties)
-                            (error "lisp-buffer-local does not work with %S"
-                                   major-mode))))
+      (let ((properties
+             (or (lisp-buffer-local--indent-properties)
+                 (error "The lisp-buffer-local package does not work with %S"
+                        major-mode))))
         (setq-local lisp-buffer-local--state
                     (cons lisp-indent-function properties))
         (setq-local lisp-indent-function
