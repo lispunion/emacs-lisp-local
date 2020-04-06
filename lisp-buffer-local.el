@@ -1,5 +1,6 @@
 ;;; lisp-buffer-local.el --- Allow different Lisp indentation in each buffer -*- lexical-binding: t -*-
 ;;
+;; Copyright 2020 Lassi Kortela
 ;; SPDX-License-Identifier: ISC
 ;; Author: Lassi Kortela <lassi@lassi.io>
 ;; URL: https://github.com/lassik/emacs-lisp-buffer-local
