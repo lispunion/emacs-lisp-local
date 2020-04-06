@@ -15,12 +15,12 @@
 ;; Lisp forms sometimes need custom indentation.  Emacs enables this
 ;; via symbol properties: e.g. (put 'when 'lisp-indent-function 1)
 ;;
-;; Unfortunately symbol properties are global to all of Emacs.  This
+;; Unfortunately symbol properties are global to all of Emacs.  That
 ;; makes it impossible to have different Lisp indentation settings in
 ;; different buffers.  This package works around the problem by adding
-;; a `lisp-indent-function' wrapper that temporarily changes those
-;; properties to buffer-local values whenever you indent some code.  It
-;; then changes them back to their global values after indenting.
+;; a `lisp-indent-function' wrapper that temporarily swaps the global
+;; properties for buffer-local values whenever you indent some code.
+;; It then changes them back to their global values after indenting.
 ;;
 ;; The buffer-local variable `lisp-buffer-local-indent' controls
 ;; indentation.  When a particular Lisp form is not mentioned in that
