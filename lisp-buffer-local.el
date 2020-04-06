@@ -109,9 +109,9 @@ to ARGS."
 (defun lisp-buffer-local ()
   "Respect local Lisp indentation settings in the current buffer.
 
-Causes `lisp-buffer-local-indent' to take effect for the current
-buffer.  The effect lasts until the buffer is killed or the major
-mode is changed.
+Causes the settings in the variable `lisp-buffer-local-indent' to
+take effect for the current buffer.  The effect lasts until the
+buffer is killed or the major mode is changed.
 
 This is meant to be used from one or more of the following hooks:
 
