@@ -3,7 +3,7 @@
 ;; Copyright 2020 Lassi Kortela
 ;; SPDX-License-Identifier: ISC
 ;; Author: Lassi Kortela <lassi@lassi.io>
-;; URL: https://github.com/lassik/emacs-lisp-local
+;; URL: https://github.com/lispunion/emacs-lisp-local
 ;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
 ;; Package-Version: 0.1.0
 ;; Keywords: languages lisp
