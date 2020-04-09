@@ -113,6 +113,10 @@ to ARGS."
 
 ;;;###autoload
 (defun lisp-local-set-indent (symbol indent)
+  "Set Lisp indentation of SYMBOL to INDENT for the current buffer only.
+
+This is a convenience function to change the `lisp-local-indent'
+variable from other Emacs packages."
   (cl-assert (symbolp symbol))
   (cl-assert (and (integerp indent) (>= indent 0)))
   (setq lisp-local-indent
