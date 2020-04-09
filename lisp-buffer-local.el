@@ -112,6 +112,14 @@ to ARGS."
          '(lisp-indent-function scheme-indent-function))))
 
 ;;;###autoload
+(defun lisp-buffer-local-set-indent (symbol indent)
+  (cl-assert (symbolp symbol))
+  (cl-assert (and (integerp indent) (>= indent 0)))
+  (setq lisp-buffer-local-indent
+        (plist-put lisp-buffer-local-indent symbol indent))
+  t)
+
+;;;###autoload
 (defun lisp-buffer-local ()
   "Respect local Lisp indentation settings in the current buffer.
 
