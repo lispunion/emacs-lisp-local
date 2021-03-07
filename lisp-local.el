@@ -122,6 +122,14 @@ to ARGS."
         ((derived-mode-p 'scheme-mode)
          '(lisp-indent-function scheme-indent-function))))
 
+(defun lisp-local--valid-indent-amount-p (indent)
+  "Return t if INDENT is a valid indent amount, nil otherwise."
+  (and (integerp indent) (>= indent 0)))
+
+(defun lisp-local--valid-indent-settings-p (indent)
+  "Return t if INDENT is a valid value for `lisp-local-indent'."
+  (lisp-local--valid-plist-p indent #'lisp-local--valid-indent-amount-p))
+
 ;;;###autoload
 (defun lisp-local-set-indent (symbol indent)
   "Set Lisp indentation of SYMBOL to INDENT for the current buffer only.
@@ -129,7 +137,7 @@ to ARGS."
 This is a convenience function to change the `lisp-local-indent'
 variable from other Emacs packages."
   (cl-assert (symbolp symbol))
-  (cl-assert (and (integerp indent) (>= indent 0)))
+  (cl-assert (lisp-local--valid-indent-amount-p indent))
   (setq lisp-local-indent
         (plist-put lisp-local-indent symbol indent))
   t)
@@ -169,6 +177,9 @@ their global values."
         (setq-local lisp-indent-function
                     #'lisp-local--indent-function)
         t)))
+
+(put 'lisp-local-indent 'safe-local-variable
+     'lisp-local--valid-indent-settings-p)
 
 (provide 'lisp-local)
 
