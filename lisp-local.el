@@ -4,7 +4,7 @@
 ;; SPDX-License-Identifier: ISC
 ;; Author: Lassi Kortela <lassi@lassi.io>
 ;; URL: https://github.com/lispunion/emacs-lisp-local
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "24.3"))
 ;; Package-Version: 0.1.0
 ;; Keywords: languages lisp
 ;;
@@ -41,6 +41,8 @@
 ;;
 ;;; Code:
 
+(require 'cl-lib)
+
 (defvar-local lisp-local-indent nil
   "Lisp indentation properties for this buffer.
 
@@ -50,11 +52,20 @@ Example: (if 1 let1 2 with-input-from-string 1)")
 (defvar-local lisp-local--state nil
   "Internal state of `lisp-local' for this buffer.")
 
-(defun lisp-local--valid-plist-p (plist)
-  "Return t if PLIST is a valid property list, nil otherwise."
-  (while (and (consp plist) (symbolp (car plist)) (consp (cdr plist)))
-    (setq plist (cddr plist)))
-  (null plist))
+(defun lisp-local--valid-plist-p (plist &optional valid-value-p)
+  "Return t if PLIST is a valid property list, nil otherwise.
+
+Optional argument VALID-VALUE-P is a function to validate each
+value in the property list.  Keys must always be symbols."
+  (and (listp plist)
+       (not (null (cl-list-length plist)))
+       (progn (while (and (consp plist)
+                          (symbolp (car plist))
+                          (consp (cdr plist))
+                          (or (null valid-value-p)
+                              (funcall valid-value-p (cadr plist))))
+                (setq plist (cddr plist)))
+              (null plist))))
 
 (defun lisp-local--make-plists (settings propnames)
   "Internal helper to merge SETTINGS and PROPNAMES into PLISTS."
