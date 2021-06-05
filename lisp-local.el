@@ -52,6 +52,9 @@ Example: (if 1 let1 2 with-input-from-string 1)")
 (defvar-local lisp-local--state nil
   "Internal state of `lisp-local' for this buffer.")
 
+(defvar lisp-local--indenting-p nil
+  "Internal variable to prevent loops.")
+
 (defun lisp-local--valid-plist-p (plist &optional valid-value-p)
   "Return t if PLIST is a valid property list, nil otherwise.
 
@@ -107,9 +110,11 @@ value in the property list.  Keys must always be symbols."
 Applies the old function from the variable `lisp-indent-function'
 to ARGS."
   (cl-assert (consp lisp-local--state))
-  (apply #'lisp-local--call-with-properties
-         (car lisp-local--state)
-         args))
+  (unless lisp-local--indenting-p
+    (let ((lisp-local--indenting-p t))
+      (apply #'lisp-local--call-with-properties
+             (car lisp-local--state)
+             args))))
 
 (defun lisp-local--indent-properties ()
   "Internal helper for `lisp-local'."
