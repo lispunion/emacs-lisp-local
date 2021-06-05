@@ -96,10 +96,11 @@ value in the property list.  Keys must always be symbols."
                 (old-plists
                  (mapcar (lambda (sym) (cons sym (symbol-plist sym)))
                          (mapcar #'car new-plists))))
-           (mapc (lambda (sym-plist)
-                   (setplist (car sym-plist) (cdr sym-plist)))
-                 new-plists)
-           (unwind-protect (apply fun args)
+           (unwind-protect
+               (progn (mapc (lambda (sym-plist)
+                              (setplist (car sym-plist) (cdr sym-plist)))
+                            new-plists)
+                      (apply fun args))
              (mapc (lambda (sym-plist)
                      (setplist (car sym-plist) (cdr sym-plist)))
                    old-plists))))))
