@@ -173,16 +173,23 @@ function wrapping the real indent function provided by the major
 mode.  The wrapper overrides global indentation-related symbol
 properties with their local values, then restores them back to
 their global values."
-  (or (consp lisp-local--state)
-      (let ((properties
-             (or (lisp-local--indent-properties)
-                 (error "The lisp-local package does not work with %S"
-                        major-mode))))
-        (setq-local lisp-local--state
-                    (cons lisp-indent-function properties))
-        (setq-local lisp-indent-function
-                    #'lisp-local--indent-function)
-        t)))
+  (let ((old-indent (or (and (consp lisp-local--state)
+                             (car lisp-local--state))
+                        lisp-indent-function))
+        (properties
+         (or (lisp-local--indent-properties)
+             (error "The lisp-local package does not work with %S"
+                    major-mode))))
+    (setq-local lisp-local--state
+                (cons (if (or (eq old-indent 'lisp-local--indent-function)
+                              (eq old-indent (function
+                                              lisp-local--indent-function)))
+                          'lisp-indent-function
+                        lisp-indent-function)
+                      properties)))
+  (setq-local lisp-indent-function
+              #'lisp-local--indent-function)
+  t)
 
 (put 'lisp-local-indent 'safe-local-variable
      'lisp-local--valid-indent-settings-p)
